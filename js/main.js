@@ -28,10 +28,26 @@ if (typeof AppConfig === 'undefined') {
 
 const scriptUrl = AppConfig ? AppConfig.scriptUrl : "";
 
+// ... existing logging functions ...
+
+// Helper to get key
+function getSecretKey() {
+    return document.getElementById('inputKey').value;
+}
+
 // --- 1. POST (Write) ---
 document.getElementById('btnSubmit').addEventListener('click', () => {
+    const keyVal = getSecretKey();
     const nameVal = document.getElementById('inputName').value;
     const roleVal = document.getElementById('inputRole').value;
+    
+    if(!keyVal) {
+        alert("Please enter the Secret Key first.");
+        return;
+    }
+
+    // UI Elements
+    
     const btn = document.getElementById('btnSubmit');
 
     if(!nameVal || !roleVal) {
@@ -46,20 +62,26 @@ document.getElementById('btnSubmit').addEventListener('click', () => {
 
     fetch(scriptUrl, {
         method: 'POST',
-        // IMPORTANT: sending as plain text to avoid CORS preflight OPTIONS request
-        body: JSON.stringify({ name: nameVal, role: roleVal }), 
+        // INCLUDE KEY IN THE BODY
+        body: JSON.stringify({ 
+            key: keyVal,   // <--- Sending the key
+            name: nameVal, 
+            role: roleVal 
+        }), 
     })
     .then(response => response.json())
     .then(data => {
         logToScreen(`Server Response: ${JSON.stringify(data)}`);
-        
+
         if(data.status === 'success') {
             logToScreen("Write Successful!");
             document.getElementById('inputName').value = '';
             document.getElementById('inputRole').value = '';
-            fetchData(); // Auto refresh table
+            fetchData(); 
         } else {
+            // Handle Auth Error
             logToScreen(`Server Error: ${data.error}`, "error");
+            if(data.error.includes("Invalid")) alert("Wrong Password!");
         }
     })
     .catch(error => {
@@ -73,16 +95,24 @@ document.getElementById('btnSubmit').addEventListener('click', () => {
 
 // --- 2. GET (Read) ---
 function fetchData() {
-    logToScreen("Fetching data from Google Sheet...");
+    const keyVal = getSecretKey();
+    if(!keyVal) {
+        document.getElementById('data-display').innerHTML = "<p>Enter Secret Key to load data.</p>";
+        return;
+    }
     const display = document.getElementById('data-display');
-    
-    fetch(scriptUrl)
+
+    logToScreen("Fetching data from Google Sheet...");
+
+    const urlWithKey = `${scriptUrl}?key=${encodeURIComponent(keyVal)}`;
+        
+
+    fetch(urlWithKey)
     .then(res => res.json())
     .then(dataObj => {
         if(dataObj.status !== 'success') {
             throw new Error(dataObj.error);
         }
-
         logToScreen(`Data received. Rows found: ${dataObj.data.length}`);
         
         const rows = dataObj.data;
@@ -110,11 +140,10 @@ function fetchData() {
         display.innerHTML = html;
     })
     .catch(err => {
-        logToScreen(`Read Error: ${err}`, "error");
-        display.innerHTML = "<p style='color:red'>Error loading data.</p>";
+        logToScreen(`Error: ${err}`, "error");
+        document.getElementById('data-display').innerHTML = "<p>Auth Failed or Error.</p>";
     });
 }
 
-// Initial Load
+// We only load when the user clicks Refresh because they need to type the password first.
 document.getElementById('btnRefresh').addEventListener('click', fetchData);
-fetchData();
