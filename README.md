@@ -6,4 +6,4 @@ Deployment ID
 AKfycbwqZp_A95JrU0lyQmzZCG4nZUKAs4EA86uVDAwyh6uqT9vRkepl5OzC5CURtTSXhMvI
 Web app
 URL
-https://script.google.com/a/macros/iiita.ac.in/s/AKfycbwqZp_A95JrU0lyQmzZCG4nZUKAs4EA86uVDAwyh6uqT9vRkepl5OzC5CURtTSXhMvI/exec
+--hidden--

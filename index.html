@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G-Sheet Connection Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .form-group { margin-bottom: 10px; }
+        input { padding: 8px; width: 100%; box-sizing: border-box; }
+        button { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; }
+        button:hover { background: #0056b3; }
+        #data-display { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <h2>Connection Test: Write Data</h2>
+    <div class="form-group">
+        <input type="text" id="inputName" placeholder="Enter Name">
+    </div>
+    <div class="form-group">
+        <input type="text" id="inputRole" placeholder="Enter Role">
+    </div>
+    <button id="btnSubmit">Send to Sheet</button>
+
+    <h2>Connection Test: Read Data</h2>
+    <button id="btnRefresh">Refresh Data</button>
+    <div id="data-display">
+        <p>Loading data...</p>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
