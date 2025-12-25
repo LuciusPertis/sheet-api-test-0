@@ -5,18 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>G-Sheet Connection Test</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        /* Basic Styling */
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #f4f4f9; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* Inputs */
         .form-group { margin-bottom: 10px; }
-        input { padding: 8px; width: 100%; box-sizing: border-box; }
-        button { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; }
+        input { padding: 10px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        
+        /* Buttons */
+        button { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; font-weight: bold; }
         button:hover { background: #0056b3; }
-        #data-display { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Table */
+        #data-display { margin-top: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        td, th { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
+        th { background-color: #eee; }
+
+        /* DEBUG CONSOLE STYLING */
+        #debug-area { margin-top: 30px; }
+        #console-log { 
+            background: #1e1e1e; 
+            color: #00ff00; 
+            font-family: 'Courier New', Courier, monospace; 
+            padding: 15px; 
+            height: 150px; 
+            overflow-y: scroll; 
+            border-radius: 5px; 
+            font-size: 12px; 
+            border: 1px solid #333;
+        }
     </style>
 </head>
 <body>
 
+<div class="container">
     <h2>Connection Test: Write Data</h2>
     <div class="form-group">
         <input type="text" id="inputName" placeholder="Enter Name">
@@ -26,13 +51,22 @@
     </div>
     <button id="btnSubmit">Send to Sheet</button>
 
+    <hr style="margin: 20px 0;">
+
     <h2>Connection Test: Read Data</h2>
     <button id="btnRefresh">Refresh Data</button>
     <div id="data-display">
-        <p>Loading data...</p>
+        <p><i>Data will appear here...</i></p>
     </div>
 
-    <script src="js/config.js"></script>
-    <script src="js/main.js"></script>
+    <div id="debug-area">
+        <h3>Debug Console</h3>
+        <div id="console-log">Initializing...</div>
+    </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/main.js"></script>
+
 </body>
 </html>

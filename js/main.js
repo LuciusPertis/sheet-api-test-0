@@ -1,46 +1,69 @@
-// Ensure config is loaded
-if (typeof AppConfig === 'undefined') {
-    console.error("Config file not loaded!");
+// --- HELPER: Debug Logger ---
+function logToScreen(msg, type = 'info') {
+    const logEl = document.getElementById('console-log');
+    const time = new Date().toLocaleTimeString();
+    const prefix = type === 'error' ? '❌ ERROR:' : 'ℹ️ INFO:';
+    
+    // Create new line
+    const line = document.createElement('div');
+    line.textContent = `[${time}] ${prefix} ${msg}`;
+    
+    if(type === 'error') line.style.color = '#ff4444'; // Red text for errors
+    
+    logEl.appendChild(line);
+    
+    // Auto-scroll to bottom
+    logEl.scrollTop = logEl.scrollHeight;
+    
+    // Also log to browser console
+    console.log(`[${time}] ${msg}`);
 }
 
-const scriptUrl = AppConfig.scriptUrl;
+// Ensure config is loaded
+if (typeof AppConfig === 'undefined') {
+    logToScreen("Config file (js/config.js) not found!", "error");
+} else {
+    logToScreen("Config loaded. Script URL configured.");
+}
 
-// --- 1. POST (Write) Functionality ---
+const scriptUrl = AppConfig ? AppConfig.scriptUrl : "";
+
+// --- 1. POST (Write) ---
 document.getElementById('btnSubmit').addEventListener('click', () => {
     const nameVal = document.getElementById('inputName').value;
     const roleVal = document.getElementById('inputRole').value;
     const btn = document.getElementById('btnSubmit');
 
     if(!nameVal || !roleVal) {
+        logToScreen("Input validation failed: Fields empty.", "error");
         alert("Please fill in all fields");
         return;
     }
 
-    // UI Feedback
+    logToScreen(`Attempting to send data: ${nameVal}, ${roleVal}...`);
     btn.textContent = "Sending...";
     btn.disabled = true;
 
-    // We use 'no-cors' mode usually? NO.
-    // For Google Apps Script, we must follow redirects.
-    // We send data as a Stringified JSON inside a text/plain body 
-    // to prevent the browser from sending an OPTIONS preflight request which GAS hates.
     fetch(scriptUrl, {
         method: 'POST',
-        body: JSON.stringify({ name: nameVal, role: roleVal }),
+        // IMPORTANT: sending as plain text to avoid CORS preflight OPTIONS request
+        body: JSON.stringify({ name: nameVal, role: roleVal }), 
     })
     .then(response => response.json())
     .then(data => {
-        console.log("Success:", data);
-        alert("Data Saved!");
-        // Clear inputs
-        document.getElementById('inputName').value = '';
-        document.getElementById('inputRole').value = '';
-        // Refresh the table
-        fetchData();
+        logToScreen(`Server Response: ${JSON.stringify(data)}`);
+        
+        if(data.status === 'success') {
+            logToScreen("Write Successful!");
+            document.getElementById('inputName').value = '';
+            document.getElementById('inputRole').value = '';
+            fetchData(); // Auto refresh table
+        } else {
+            logToScreen(`Server Error: ${data.error}`, "error");
+        }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert("Connection Failed. Check Console.");
+        logToScreen(`Fetch Error: ${error}`, "error");
     })
     .finally(() => {
         btn.textContent = "Send to Sheet";
@@ -48,26 +71,37 @@ document.getElementById('btnSubmit').addEventListener('click', () => {
     });
 });
 
-// --- 2. GET (Read) Functionality ---
+// --- 2. GET (Read) ---
 function fetchData() {
+    logToScreen("Fetching data from Google Sheet...");
     const display = document.getElementById('data-display');
-    display.innerHTML = "Fetching...";
-
+    
     fetch(scriptUrl)
     .then(res => res.json())
     .then(dataObj => {
-        if(dataObj.status !== 'success') throw new Error(dataObj.error);
+        if(dataObj.status !== 'success') {
+            throw new Error(dataObj.error);
+        }
 
-        const rows = dataObj.data;
+        logToScreen(`Data received. Rows found: ${dataObj.data.length}`);
         
-        // Build Table HTML
+        const rows = dataObj.data;
+        if(rows.length === 0) {
+            display.innerHTML = "<p>No data found.</p>";
+            return;
+        }
+
         let html = '<table>';
         rows.forEach((row, index) => {
             html += '<tr>';
-            // Use TH for the first row (headers)
             const tag = index === 0 ? 'th' : 'td';
             row.forEach(cell => {
-                html += `<${tag}>${cell}</${tag}>`;
+                // formatting dates if needed
+                let text = cell;
+                if(String(cell).includes("T") && String(cell).includes("Z")) {
+                     text = new Date(cell).toLocaleString();
+                }
+                html += `<${tag}>${text}</${tag}>`;
             });
             html += '</tr>';
         });
@@ -76,13 +110,11 @@ function fetchData() {
         display.innerHTML = html;
     })
     .catch(err => {
-        console.error(err);
-        display.innerHTML = "Error loading data.";
+        logToScreen(`Read Error: ${err}`, "error");
+        display.innerHTML = "<p style='color:red'>Error loading data.</p>";
     });
 }
 
-// Attach listener to refresh button
-document.getElementById('btnRefresh').addEventListener('click', fetchData);
-
 // Initial Load
+document.getElementById('btnRefresh').addEventListener('click', fetchData);
 fetchData();
